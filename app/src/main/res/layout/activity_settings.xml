@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="600dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:padding="32dp">
+
+        <TextView
+            android:text="NAS connection"
+            android:textColor="@color/fg"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:text="Same NAS your movie-catalog script scans - see its README for the folders it expects."
+            android:textColor="@color/muted"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!--
+          Each field is singleLine with imeOptions="actionNext"/"actionDone" and an explicit
+          nextFocusDown/nextFocusForward to the next field: on Android TV, pressing D-pad-down while
+          the on-screen keyboard is open does NOT move focus to the next EditText on its own - it
+          either does nothing or (worse) keeps typing into the same field. The Enter/Next key on the
+          on-screen keyboard is what actually advances, driven by these attributes. textNoSuggestions
+          turns off autocorrect/suggestions, which otherwise can silently mangle a typed IP/path.
+        -->
+        <EditText android:id="@+id/host" android:hint="NAS host or IP, e.g. 192.168.1.50"
+            android:singleLine="true" android:inputType="textNoSuggestions" android:imeOptions="actionNext"
+            android:nextFocusDown="@id/username" android:nextFocusForward="@id/username"
+            android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <EditText android:id="@+id/username" android:hint="Username"
+            android:singleLine="true" android:inputType="textNoSuggestions" android:imeOptions="actionNext"
+            android:nextFocusUp="@id/host" android:nextFocusDown="@id/password" android:nextFocusForward="@id/password"
+            android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <EditText android:id="@+id/password" android:hint="Password" android:inputType="textPassword"
+                android:singleLine="true" android:imeOptions="actionNext"
+                android:nextFocusUp="@id/username" android:nextFocusDown="@id/showPassword" android:nextFocusForward="@id/showPassword"
+                android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+            <!-- Toggles the password field's inputType between hidden dots and plain text, so you
+                 can confirm what you typed matches your NAS login before saving. -->
+            <Button android:id="@+id/showPassword" android:text="Show"
+                android:nextFocusUp="@id/password" android:nextFocusDown="@id/domain" android:nextFocusForward="@id/domain"
+                android:layout_marginStart="8dp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+        <EditText android:id="@+id/domain" android:hint="Domain / workgroup (optional)"
+            android:singleLine="true" android:inputType="textNoSuggestions" android:imeOptions="actionNext"
+            android:nextFocusUp="@id/showPassword" android:nextFocusDown="@id/shareMap" android:nextFocusForward="@id/shareMap"
+            android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <EditText android:id="@+id/shareMap" android:hint="root=share pairs, e.g. movies=movies,movies-2T=movies-2T"
+            android:singleLine="true" android:inputType="textNoSuggestions" android:imeOptions="actionNext"
+            android:nextFocusUp="@id/domain" android:nextFocusDown="@id/catalogRoot" android:nextFocusForward="@id/catalogRoot"
+            android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <EditText android:id="@+id/catalogRoot" android:hint="Root holding movie-catalog/, e.g. movies"
+            android:singleLine="true" android:inputType="textNoSuggestions" android:imeOptions="actionDone"
+            android:nextFocusUp="@id/shareMap" android:nextFocusDown="@id/save" android:nextFocusForward="@id/save"
+            android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <Button android:id="@+id/save" android:text="Save and continue"
+            android:nextFocusUp="@id/catalogRoot"
+            android:layout_marginTop="24dp"
+            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,13 @@
+<resources>
+    <!-- Applied at the <application> level, for MainActivity's Leanback BrowseSupportFragment. -->
+    <style name="Theme.Leanback" parent="Theme.Leanback">
+        <item name="android:windowBackground">@color/bg</item>
+    </style>
+
+    <!-- Details/Settings/Playback use plain AppCompat views (Button, EditText, ScrollView), which
+         need a Theme.AppCompat descendant - Theme.Leanback alone crashes them with
+         "You need to use a Theme.AppCompat theme (or descendant) with this activity." -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+    </style>
+</resources>

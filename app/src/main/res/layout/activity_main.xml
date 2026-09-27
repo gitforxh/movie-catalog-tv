@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/main_title"
+            android:text="@string/app_name"
+            android:textColor="@color/fg"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <FrameLayout
+            android:layout_marginStart="24dp"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/search"
+                android:hint="Search..."
+                android:singleLine="true"
+                android:inputType="textNoSuggestions"
+                android:imeOptions="actionDone"
+                android:textColor="@color/fg"
+                android:textColorHint="@color/muted"
+                android:backgroundTint="@color/muted"
+                android:paddingEnd="36dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <ImageButton
+                android:id="@+id/clear_search"
+                android:contentDescription="Clear search"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:background="@null"
+                android:visibility="gone"
+                android:layout_gravity="end|center_vertical"
+                android:layout_width="32dp"
+                android:layout_height="32dp" />
+
+        </FrameLayout>
+
+        <!-- Sort defaults to IMDb score to match movies.html's default; "Name" and "Year" cover the
+             other common ways to hunt for one movie in a large library. -->
+        <Spinner
+            android:id="@+id/sort"
+            android:layout_marginStart="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Populated at runtime from the years actually present in the catalog; defaults to
+             the current year (falling back to "All Years" when nothing matches it). -->
+        <Spinner
+            android:id="@+id/year"
+            android:layout_marginStart="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/settings_button"
+            android:contentDescription="NAS Settings"
+            android:src="@drawable/ic_gear"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="@color/fg"
+            android:layout_width="48dp"
+            android:layout_height="48dp" />
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/grid"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>
