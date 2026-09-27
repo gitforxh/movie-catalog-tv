@@ -46,11 +46,12 @@
                 android:id="@+id/clear_search"
                 android:contentDescription="Clear search"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:scaleType="fitCenter"
                 android:background="@null"
                 android:visibility="gone"
                 android:layout_gravity="end|center_vertical"
-                android:layout_width="32dp"
-                android:layout_height="32dp" />
+                android:layout_width="26dp"
+                android:layout_height="26dp" />
 
         </FrameLayout>
 
