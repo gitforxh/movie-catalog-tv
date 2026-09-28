@@ -12,6 +12,7 @@ import android.widget.ImageButton
 import android.view.View
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity() {
     private var sortIndex = 0
     private var selectedYear = ALL_YEARS
     private var yearsPopulated = false
+    private lateinit var grid: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         adapter = MovieGridAdapter(
             onMovieClick = { movie -> startActivity(Intent(this, DetailsActivity::class.java).putExtra("movie", movie)) },
         )
-        findViewById<RecyclerView>(R.id.grid).apply {
+        grid = findViewById<RecyclerView>(R.id.grid).apply {
             layoutManager = GridLayoutManager(this@MainActivity, 5)
             adapter = this@MainActivity.adapter
         }
@@ -77,6 +79,23 @@ class MainActivity : AppCompatActivity() {
 
         val searchBox = findViewById<EditText>(R.id.search)
         val clearSearch = findViewById<ImageButton>(R.id.clear_search)
+
+        // While browsing the grid with the D-pad, back would otherwise exit the app straight away -
+        // send focus back to the search bar first instead, matching how "back" feels like going up
+        // a level rather than a dead end. Once focus is already back on the search bar (or anywhere
+        // else outside the grid), back behaves normally and exits.
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val focused = currentFocus
+                if (focused != null && grid.findContainingViewHolder(focused) != null) {
+                    searchBox.requestFocus()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        })
         searchBox.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 query = s?.toString()?.trim()?.lowercase() ?: ""
@@ -110,6 +129,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         loadCatalog()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Returning to the app (e.g. after backgrounding it, or coming back from Details/Playback)
+        // was otherwise landing focus on the search bar every time, popping the keyboard up
+        // unexpectedly - Android's default focus restoration picks the first focusable view when
+        // nothing is focused, which is the search box since it comes before the grid in the layout.
+        // Sending focus to the grid instead keeps (or defaults to) a movie card, which is what
+        // "coming back to where you were browsing" should feel like.
+        if (grid.childCount > 0 && currentFocus?.let { grid.findContainingViewHolder(it) } == null) {
+            grid.requestFocus()
+        }
     }
 
     private fun loadCatalog() {
