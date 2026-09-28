@@ -44,7 +44,8 @@ class MovieGridAdapter(
 
         fun bindMovie(movie: Movie, onClick: (Movie) -> Unit) {
             title.text = movie.name
-            subtitle.text = if (movie.imdb != null) "${movie.year} · IMDb ${movie.imdb}" else movie.year
+            val date = movie.released?.takeIf { it.isNotEmpty() } ?: movie.year
+            subtitle.text = if (movie.imdb != null) "$date · IMDb ${movie.imdb}" else date
             poster.setImageDrawable(ColorDrawable(Color.parseColor("#1f1f24")))
             if (!movie.poster.isNullOrEmpty()) {
                 Picasso.get().load(movie.poster).into(poster)

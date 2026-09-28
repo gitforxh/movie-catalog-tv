@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val TAG = "MovieCatalog"
-private val SORT_OPTIONS = listOf("IMDb score", "Name (A-Z)", "Release year")
+private val SORT_OPTIONS = listOf("IMDb score", "Name (A-Z)", "Release date")
 private const val ALL_YEARS = "All Years"
 
 /**
@@ -194,7 +194,7 @@ class MainActivity : AppCompatActivity() {
         if (query.isEmpty() && selectedYear != ALL_YEARS) list = list.filter { it.year == selectedYear }
         list = when (sortIndex) {
             1 -> list.sortedBy { it.name.lowercase() }
-            2 -> list.sortedByDescending { it.year }
+            2 -> list.sortedByDescending { it.released?.takeIf { r -> r.isNotEmpty() } ?: (it.year + "-00-00") }
             else -> list.sortedByDescending { it.imdb?.toFloatOrNull() ?: -1f }
         }
         adapter.setItems(list)
