@@ -40,18 +40,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
-            <TextView
+            <LinearLayout
                 android:id="@+id/genres"
-                android:textColor="@color/muted"
-                android:textSize="14sp"
-                android:layout_marginTop="4dp"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
-            <TextView
+            <LinearLayout
                 android:id="@+id/scores"
-                android:textColor="@color/fg"
-                android:textSize="16sp"
+                android:orientation="horizontal"
                 android:layout_marginTop="16dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -67,6 +65,11 @@
             <Button
                 android:id="@+id/play"
                 android:text="Play"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:background="@drawable/play_button_background"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
                 android:layout_marginTop="24dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

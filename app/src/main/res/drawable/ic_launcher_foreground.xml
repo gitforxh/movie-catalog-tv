@@ -2,11 +2,27 @@
     android:width="108dp" android:height="108dp"
     android:viewportWidth="64"
     android:viewportHeight="64">
-    <path android:fillColor="#FFFFFF" android:pathData="M6,27 L58,27 L58,57 L6,57 Z" />
-    <path android:fillColor="#1f2937" android:pathData="M6,11 L58,11 L58,24 L6,24 Z" />
-    <path android:fillColor="#facc15" android:pathData="M12,11 L22,11 L16,24 L6,24 Z" />
-    <path android:fillColor="#22d3ee" android:pathData="M26,11 L36,11 L30,24 L20,24 Z" />
-    <path android:fillColor="#f43f5e" android:pathData="M40,11 L50,11 L44,24 L34,24 Z" />
-    <path android:fillColor="#4ade80" android:pathData="M54,11 L58,11 L58,24 L48,24 Z" />
-    <path android:fillColor="#f43f5e" android:pathData="M26,33 L26,52 L44,42.5 Z" />
+    <!-- Scaled down and centered on the 64x64 viewport so the whole graphic stays inside the
+         adaptive-icon safe zone - Samsung One UI's icon mask crops more aggressively than a plain
+         circle/squircle, so content sized for other launchers was getting clipped there. -->
+    <group
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:pivotX="32"
+        android:pivotY="32"
+        android:translateY="2">
+        <path android:fillColor="#FFFFFF"
+              android:pathData="M14,21 H50 Q58,21 58,29 V43 Q58,51 50,51 H14 Q6,51 6,43 V29 Q6,21 14,21 Z" />
+        <group>
+            <!-- Clips the header bar and its colored tabs to the same rounded-rect silhouette, so
+                 the leftmost/rightmost tabs don't poke sharp corners out past the rounded bar. -->
+            <clip-path android:pathData="M12,5 H52 Q58,5 58,11 V12 Q58,18 52,18 H12 Q6,18 6,12 V11 Q6,5 12,5 Z" />
+            <path android:fillColor="#1f2937" android:pathData="M6,5 L58,5 L58,18 L6,18 Z" />
+            <path android:fillColor="#facc15" android:pathData="M12,5 L22,5 L16,18 L6,18 Z" />
+            <path android:fillColor="#22d3ee" android:pathData="M26,5 L36,5 L30,18 L20,18 Z" />
+            <path android:fillColor="#f43f5e" android:pathData="M40,5 L50,5 L44,18 L34,18 Z" />
+            <path android:fillColor="#4ade80" android:pathData="M54,5 L58,5 L58,18 L48,18 Z" />
+        </group>
+        <path android:fillColor="#f43f5e" android:pathData="M26,27 L26,46 L44,36.5 Z" />
+    </group>
 </vector>

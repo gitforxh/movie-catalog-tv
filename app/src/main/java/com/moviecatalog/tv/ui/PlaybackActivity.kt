@@ -5,14 +5,21 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import com.moviecatalog.tv.R
 import com.moviecatalog.tv.data.Prefs
 import com.moviecatalog.tv.smb.SmbClient
 import com.moviecatalog.tv.smb.SmbDataSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** Streams a movie straight off the NAS - see [SmbDataSource] for how the SMB read is wired into ExoPlayer. */
 class PlaybackActivity : AppCompatActivity() {
@@ -27,9 +34,7 @@ class PlaybackActivity : AppCompatActivity() {
         val client = SmbClient(Prefs(this))
 
         val exoPlayer = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(
-                androidx.media3.exoplayer.source.DefaultMediaSourceFactory(SmbDataSource.Factory(client))
-            )
+            .setMediaSourceFactory(DefaultMediaSourceFactory(SmbDataSource.Factory(client)))
             .build()
         player = exoPlayer
         findViewById<PlayerView>(R.id.player_view).player = exoPlayer
@@ -41,9 +46,43 @@ class PlaybackActivity : AppCompatActivity() {
             }
         })
 
-        exoPlayer.setMediaItem(MediaItem.fromUri(Uri.parse("smbcatalog:" + Uri.encode(path))))
-        exoPlayer.prepare()
-        exoPlayer.playWhenReady = true
+        // Finding a sibling subtitle file needs its own SMB directory listing, so it's looked up in
+        // the background rather than blocking the player from starting - the movie starts playing
+        // (without subtitles) even if this lookup is slow or finds nothing.
+        CoroutineScope(Dispatchers.Main).launch {
+            val subtitlePath = try {
+                withContext(Dispatchers.IO) { client.findSubtitlePath(path) }
+            } catch (e: Exception) {
+                Log.d("MovieCatalog", "findSubtitlePath failed for \"$path\"", e)
+                null
+            }
+            val mediaItem = MediaItem.Builder()
+                .setUri(Uri.parse("smbcatalog:" + Uri.encode(path)))
+                .apply {
+                    if (subtitlePath != null) {
+                        Log.d("MovieCatalog", "Found subtitle \"$subtitlePath\" for \"$path\"")
+                        setSubtitleConfigurations(
+                            listOf(
+                                MediaItem.SubtitleConfiguration.Builder(Uri.parse("smbcatalog:" + Uri.encode(subtitlePath)))
+                                    .setMimeType(subtitleMimeType(subtitlePath))
+                                    .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                                    .setLabel("From NAS folder")
+                                    .build()
+                            )
+                        )
+                    }
+                }
+                .build()
+            exoPlayer.setMediaItem(mediaItem)
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
+        }
+    }
+
+    private fun subtitleMimeType(path: String) = when (path.substringAfterLast('.', "").lowercase()) {
+        "vtt" -> MimeTypes.TEXT_VTT
+        "ass", "ssa" -> MimeTypes.TEXT_SSA
+        else -> MimeTypes.APPLICATION_SUBRIP
     }
 
     override fun onStop() {

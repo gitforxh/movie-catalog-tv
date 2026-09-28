@@ -10,6 +10,7 @@ import jcifs.smb.SmbFile
 import java.util.Properties
 
 private val VIDEO_EXTENSIONS = setOf("mkv", "mp4", "avi", "m4v", "mov", "wmv", "ts")
+private val SUBTITLE_EXTENSIONS = setOf("srt", "vtt", "ass", "ssa")
 
 class SmbException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
@@ -112,7 +113,10 @@ class SmbClient(private val prefs: Prefs) {
         // real on-disk filenames - so strip that duplicated prefix back off if present.
         val folderName = catalogPath.substringAfterLast('/')
         fun realName(raw: String) = raw.removePrefix(folderName)
-        val candidates = all.filter { it.isFile && realName(it.name).substringAfterLast('.', "").lowercase() in VIDEO_EXTENSIONS }
+        val candidates = all.filter {
+            it.isFile && !realName(it.name).startsWith(".") &&
+                realName(it.name).substringAfterLast('.', "").lowercase() in VIDEO_EXTENSIONS
+        }
         val chosenName = candidates.maxByOrNull { it.length() }?.let { realName(it.name) }
             ?: throw SmbException("No video file found in ${f.path}")
         Log.d("MovieCatalog", "resolvePlayableFile: chose \"$chosenName\"")
@@ -122,5 +126,41 @@ class SmbClient(private val prefs: Prefs) {
         // for some titles ("the system cannot find the file specified" on a file that clearly
         // exists and was just measured successfully moments earlier).
         return smbFile("$catalogPath/$chosenName")
+    }
+
+    /**
+     * Looks for a subtitle file (.srt/.vtt/.ass/.ssa) alongside the movie - either inside its own
+     * folder (the common "one movie per folder" layout, where any subtitle in there is assumed to
+     * belong to it), or as a sibling file matching its base name when the movie is a bare file
+     * directly under a year folder shared by many other movies. Returns the subtitle's catalog path
+     * (playable the same way as a movie, via [resolvePlayableFile]/[SmbDataSource]), or null.
+     */
+    fun findSubtitlePath(catalogPath: String): String? {
+        val f = smbFile(catalogPath)
+        val all = try { f.listFiles() } catch (e: Exception) { null }
+        if (all != null) {
+            // catalogPath is a folder - any subtitle inside it is assumed to be for its one movie.
+            // Dotfiles (e.g. macOS's "._Foo.mkv.srt" AppleDouble sidecar, left behind by files
+            // copied from a Mac) are skipped - they can share the real subtitle's extension but
+            // aren't actual subtitle content.
+            val folderName = catalogPath.substringAfterLast('/')
+            val name = all.firstOrNull {
+                val n = it.name.removePrefix(folderName)
+                it.isFile && !n.startsWith(".") && n.substringAfterLast('.', "").lowercase() in SUBTITLE_EXTENSIONS
+            }?.name?.removePrefix(folderName) ?: return null
+            return "$catalogPath/$name"
+        }
+        // catalogPath is (or resolves to) a bare file - subtitles live alongside it in the parent
+        // directory, which may hold many other unrelated movies, so match by base filename.
+        val parentPath = catalogPath.substringBeforeLast('/', "")
+        if (parentPath.isEmpty()) return null
+        val parent = smbFile(parentPath)
+        val siblings = try { parent.listFiles() } catch (e: Exception) { return null }
+        val parentFolderName = parentPath.substringAfterLast('/')
+        val baseName = catalogPath.substringAfterLast('/')
+        val name = siblings.map { it.name.removePrefix(parentFolderName) }
+            .filter { !it.startsWith(".") && it.substringAfterLast('.', "").lowercase() in SUBTITLE_EXTENSIONS }
+            .firstOrNull { it.startsWith(baseName) } ?: return null
+        return "$parentPath/$name"
     }
 }
