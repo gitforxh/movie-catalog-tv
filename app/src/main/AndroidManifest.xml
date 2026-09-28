@@ -14,7 +14,8 @@
 
         <activity
             android:name=".ui.MainActivity"
-            android:exported="true"
+            android:banner="@drawable/banner"
+                android:exported="true"
             android:theme="@style/AppTheme"
             android:screenOrientation="landscape">
             <intent-filter>
