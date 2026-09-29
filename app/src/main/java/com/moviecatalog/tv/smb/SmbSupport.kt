@@ -72,6 +72,18 @@ class SmbClient(private val prefs: Prefs) {
      * heuristic to skip samples/trailers.
      */
     fun resolvePlayableFile(catalogPath: String): SmbFile {
+        // Every seek makes ExoPlayer open a fresh data source, which used to re-list the movie's
+        // folder on the NAS each time - hammering the router with SMB requests when seeking quickly
+        // (it then stopped answering, even for movies.json). The chosen video file for a path never
+        // changes during a session, so remember it.
+        val resolved = resolvedCache.getOrPut(catalogPath) { resolvePlayableFileUncached(catalogPath) }
+        return smbFile(resolved)
+    }
+
+    private val resolvedCache = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    /** Returns the catalog path of the actual video file to play (a folder's biggest video, etc.). */
+    private fun resolvePlayableFileUncached(catalogPath: String): String {
         val f = smbFile(catalogPath)
         // f.isDirectory unreliably reports false for real directories here (observed on a real NAS,
         // regardless of a trailing slash) - so try listing it instead of trusting that flag. A real
@@ -96,7 +108,7 @@ class SmbClient(private val prefs: Prefs) {
                 val guessLength = try { guess.length() } catch (e: Exception) { -1L }
                 if (guessLength > 0) {
                     Log.d("MovieCatalog", "resolvePlayableFile: listFiles() failed, but guessed \"$folderName.$ext\" exists ($guessLength bytes)")
-                    return guess
+                    return "$catalogPath/$folderName.$ext"
                 }
             }
             Log.d("MovieCatalog", "resolvePlayableFile: treating $catalogPath as a file directly")
@@ -104,7 +116,7 @@ class SmbClient(private val prefs: Prefs) {
             // SmbFile instance is returned rather than reusing `f`: after listFiles() throws on it,
             // later calls on the same instance (even a valid one like .length()) started failing too
             // on real hardware, as if the failed query left jcifs's cached state for that object bad.
-            return smbFile(catalogPath)
+            return catalogPath
         }
         Log.d("MovieCatalog", "resolvePlayableFile: listFiles() for ${f.path} -> ${all.joinToString { it.name }}")
         // jcifs-ng's listFiles() was observed returning each child's name with the parent folder's
@@ -125,7 +137,7 @@ class SmbClient(private val prefs: Prefs) {
         // and the later streaming open() has been observed leaving jcifs's tree/session state bad
         // for some titles ("the system cannot find the file specified" on a file that clearly
         // exists and was just measured successfully moments earlier).
-        return smbFile("$catalogPath/$chosenName")
+        return "$catalogPath/$chosenName"
     }
 
     /**
