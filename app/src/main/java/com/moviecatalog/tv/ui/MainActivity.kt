@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
             onMovieClick = { movie -> startActivity(Intent(this, DetailsActivity::class.java).putExtra("movie", movie)) },
         )
         grid = findViewById<RecyclerView>(R.id.grid).apply {
-            layoutManager = GridLayoutManager(this@MainActivity, 5)
+            layoutManager = GridLayoutManager(this@MainActivity, 4)
             adapter = this@MainActivity.adapter
         }
 

@@ -9,12 +9,19 @@
     android:focusableInTouchMode="true"
     android:background="@drawable/card_focus_background">
 
-    <ImageView
+    <com.moviecatalog.tv.ui.PosterImageView
         android:id="@+id/poster"
         android:layout_width="match_parent"
-        android:layout_height="240dp"
+        android:layout_height="wrap_content"
         android:scaleType="centerCrop"
         android:background="@color/card" />
+
+    <LinearLayout
+        android:id="@+id/badges"
+        android:orientation="horizontal"
+        android:layout_marginTop="6dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <TextView
         android:id="@+id/title"
@@ -22,16 +29,7 @@
         android:textSize="14sp"
         android:maxLines="2"
         android:ellipsize="end"
-        android:layout_marginTop="6dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/subtitle"
-        android:textColor="@color/muted"
-        android:textSize="12sp"
-        android:maxLines="1"
-        android:ellipsize="end"
+        android:layout_marginTop="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
