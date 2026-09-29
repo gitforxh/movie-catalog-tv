@@ -99,7 +99,12 @@ class MainActivity : AppCompatActivity() {
         searchBox.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 query = s?.toString()?.trim()?.lowercase() ?: ""
-                clearSearch.visibility = if (query.isEmpty()) View.GONE else View.VISIBLE
+                val hasQuery = query.isNotEmpty()
+                clearSearch.visibility = if (hasQuery) View.VISIBLE else View.GONE
+                // The clear button only exists (as a focus target) while it's actually shown -
+                // otherwise pressing right from the search box should go straight to the sort
+                // spinner, not land on a hidden, stale focus target.
+                searchBox.nextFocusRightId = if (hasQuery) R.id.clear_search else R.id.sort
                 applyFilterAndSort()
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

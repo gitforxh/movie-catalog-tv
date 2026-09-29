@@ -39,6 +39,8 @@
                 android:textColorHint="@color/muted"
                 android:backgroundTint="@color/muted"
                 android:paddingEnd="36dp"
+                android:nextFocusRight="@id/sort"
+                android:nextFocusDown="@id/grid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -47,9 +49,13 @@
                 android:contentDescription="Clear search"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
                 android:scaleType="fitCenter"
-                android:background="@null"
+                android:focusable="true"
+                android:background="@drawable/round_icon_focus_background"
                 android:visibility="gone"
                 android:layout_gravity="end|center_vertical"
+                android:nextFocusLeft="@id/search"
+                android:nextFocusRight="@id/sort"
+                android:nextFocusDown="@id/grid"
                 android:layout_width="26dp"
                 android:layout_height="26dp" />
 
@@ -60,6 +66,9 @@
         <Spinner
             android:id="@+id/sort"
             android:layout_marginStart="16dp"
+            android:nextFocusLeft="@id/search"
+            android:nextFocusRight="@id/year"
+            android:nextFocusDown="@id/grid"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -68,6 +77,9 @@
         <Spinner
             android:id="@+id/year"
             android:layout_marginStart="16dp"
+            android:nextFocusLeft="@id/sort"
+            android:nextFocusRight="@id/settings_button"
+            android:nextFocusDown="@id/grid"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -82,6 +94,8 @@
             android:src="@drawable/ic_gear"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:tint="@color/fg"
+            android:nextFocusLeft="@id/year"
+            android:nextFocusDown="@id/grid"
             android:layout_width="48dp"
             android:layout_height="48dp" />
 
