@@ -24,6 +24,7 @@ data class Movie(
     val au: String?,
     val country: String?,
     val path: String?,
+    val hasSub: Boolean,
 ) : java.io.Serializable {
     val isPlayable: Boolean get() = !path.isNullOrEmpty()
 
@@ -40,6 +41,7 @@ data class Movie(
             rt?.let { "RT $it" },
             tmdb?.let { "TMDB $it" },
             au?.takeIf { it.isNotEmpty() },
+            "SUB".takeIf { hasSub },
         ).joinToString("   ")
 
     companion object {
@@ -63,6 +65,7 @@ data class Movie(
                 au = str("au"),
                 country = str("country"),
                 path = str("path"),
+                hasSub = o.optBoolean("has_sub", false),
             )
         }
     }
