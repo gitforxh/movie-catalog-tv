@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
@@ -98,7 +99,30 @@ class PlaybackActivity : AppCompatActivity() {
             .setMediaSourceFactory(DefaultMediaSourceFactory(SmbDataSource.Factory(client)))
             .build()
         player = exoPlayer
-        findViewById<PlayerView>(R.id.player_view).player = exoPlayer
+        val playerView = findViewById<PlayerView>(R.id.player_view)
+        playerView.player = exoPlayer
+        // PlayerView nests its SubtitleView inside the same aspect-ratio-locked frame as the video
+        // surface, so captions cling to the bottom edge of the picture itself - if the video is
+        // letterboxed, they sit above the black bar instead of using it. Moving the view out to the
+        // activity's own root (matching the full screen, not the video's content rect) fixes that.
+        playerView.subtitleView?.let { subtitleView ->
+            (subtitleView.parent as? android.view.ViewGroup)?.removeView(subtitleView)
+            (playerView.parent as android.view.ViewGroup).addView(
+                subtitleView,
+                android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                )
+            )
+            subtitleView.setBottomPaddingFraction(0.02f)
+            // Text size is a fraction of the SubtitleView's own height - now the full screen instead
+            // of just the video frame above, so the same default fraction rendered noticeably bigger.
+            subtitleView.setFractionalTextSize(0.042f)
+        }
+
+        // A Fire TV/Android TV screensaver would otherwise still kick in from D-pad idleness alone
+        // while a movie plays, since that isn't "user activity" the system tracks as such.
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         exoPlayer.addListener(object : Player.Listener {
             override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
@@ -248,6 +272,7 @@ class PlaybackActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         handler.removeCallbacks(saveTick)
         setupJob?.cancel()
         savePosition()
