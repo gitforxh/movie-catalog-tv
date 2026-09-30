@@ -15,18 +15,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/main_title"
-            android:text="@string/app_name"
-            android:textColor="@color/fg"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
         <FrameLayout
-            android:layout_marginStart="24dp"
-            android:layout_width="280dp"
+            android:layout_width="168dp"
             android:layout_height="wrap_content">
 
             <EditText
@@ -69,24 +59,46 @@
             android:nextFocusLeft="@id/search"
             android:nextFocusRight="@id/year"
             android:nextFocusDown="@id/grid"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content" />
 
         <!-- Populated at runtime from the years actually present in the catalog; defaults to
-             the current year (falling back to "All Years" when nothing matches it). -->
+             the current year (falling back to "All Years" when nothing matches it). All four
+             filters share the row's remaining width equally (layout_weight) instead of a fixed
+             size - a fixed width either clipped a longer label (e.g. "All Countries") or let a
+             short one (e.g. a 2-character Chinese genre) shrink the whole control down. -->
         <Spinner
             android:id="@+id/year"
             android:layout_marginStart="16dp"
             android:nextFocusLeft="@id/sort"
-            android:nextFocusRight="@id/settings_button"
+            android:nextFocusRight="@id/country"
             android:nextFocusDown="@id/grid"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="0.9"
             android:layout_height="wrap_content" />
 
-        <View
+        <!-- Populated at runtime from the countries actually present in the catalog. -->
+        <Spinner
+            android:id="@+id/country"
+            android:layout_marginStart="16dp"
+            android:nextFocusLeft="@id/year"
+            android:nextFocusRight="@id/genre"
+            android:nextFocusDown="@id/grid"
             android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
+            android:layout_weight="1.3"
+            android:layout_height="wrap_content" />
+
+        <!-- Populated at runtime from the genres actually present in the catalog. -->
+        <Spinner
+            android:id="@+id/genre"
+            android:layout_marginStart="16dp"
+            android:nextFocusLeft="@id/country"
+            android:nextFocusRight="@id/settings_button"
+            android:nextFocusDown="@id/grid"
+            android:layout_width="0dp"
+            android:layout_weight="1.3"
+            android:layout_height="wrap_content" />
 
         <ImageButton
             android:id="@+id/settings_button"
@@ -94,7 +106,8 @@
             android:src="@drawable/ic_gear"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:tint="@color/fg"
-            android:nextFocusLeft="@id/year"
+            android:layout_marginStart="12dp"
+            android:nextFocusLeft="@id/genre"
             android:nextFocusDown="@id/grid"
             android:layout_width="48dp"
             android:layout_height="48dp" />

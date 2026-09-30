@@ -68,7 +68,7 @@ class MovieGridAdapter(
             val date = TextView(ctx).apply {
                 this.text = text
                 setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.muted))
-                textSize = 11f
+                textSize = 13f
             }
             badges.addView(date, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
         }
@@ -82,7 +82,7 @@ class MovieGridAdapter(
             val badge = TextView(ctx).apply {
                 this.text = text
                 setTextColor(mutedColor)
-                textSize = 10f
+                textSize = 12f
                 setPadding(dp(6), dp(1), dp(6), dp(1))
                 background = GradientDrawable().apply {
                     setColor(Color.TRANSPARENT)
