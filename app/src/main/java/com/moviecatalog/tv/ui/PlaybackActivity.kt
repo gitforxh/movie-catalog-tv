@@ -139,26 +139,28 @@ class PlaybackActivity : AppCompatActivity() {
         // the background rather than blocking the player from starting - the movie starts playing
         // (without subtitles) even if this lookup is slow or finds nothing.
         setupJob = CoroutineScope(Dispatchers.Main).launch {
-            val subtitlePath = try {
-                withContext(Dispatchers.IO) { client.findSubtitlePath(path) }
+            val subtitlePaths = try {
+                withContext(Dispatchers.IO) { client.findSubtitlePaths(path) }
             } catch (e: Exception) {
-                Log.d(TAG, "findSubtitlePath failed for \"$path\"", e)
-                null
+                Log.d(TAG, "findSubtitlePaths failed for \"$path\"", e)
+                emptyList()
             }
+            // Every subtitle file in the folder is offered in the player's subtitle picker, labelled
+            // by language where the file name says (".chi.srt", ".en.srt"...). The first Chinese-looking
+            // one - or, failing that, the first file - is switched on by default.
+            val ordered = subtitlePaths.sortedBy { if (subtitleLanguage(it) == "Chinese") 0 else 1 }
             val mediaItem = MediaItem.Builder()
                 .setUri(Uri.parse("smbcatalog:" + Uri.encode(path)))
                 .apply {
-                    if (subtitlePath != null) {
-                        Log.d(TAG, "Found subtitle \"$subtitlePath\" for \"$path\"")
-                        setSubtitleConfigurations(
-                            listOf(
-                                MediaItem.SubtitleConfiguration.Builder(Uri.parse("smbcatalog:" + Uri.encode(subtitlePath)))
-                                    .setMimeType(subtitleMimeType(subtitlePath))
-                                    .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
-                                    .setLabel("From NAS folder")
-                                    .build()
-                            )
-                        )
+                    if (ordered.isNotEmpty()) {
+                        Log.d(TAG, "Found ${ordered.size} subtitle file(s) for \"$path\": $ordered")
+                        setSubtitleConfigurations(ordered.mapIndexed { i, subtitlePath ->
+                            MediaItem.SubtitleConfiguration.Builder(Uri.parse("smbcatalog:" + Uri.encode(subtitlePath)))
+                                .setMimeType(subtitleMimeType(subtitlePath))
+                                .setSelectionFlags(if (i == 0) C.SELECTION_FLAG_DEFAULT else 0)
+                                .setLabel(subtitleLabel(subtitlePath))
+                                .build()
+                        })
                     }
                 }
                 .build()
@@ -174,6 +176,28 @@ class PlaybackActivity : AppCompatActivity() {
             exoPlayer.playWhenReady = true
         }
         handler.postDelayed(saveTick, SAVE_INTERVAL_MS)
+    }
+
+    /** "Chinese" / "English" when a subtitle file's name says so (".chi.srt", ".en.srt", "简体"...), else
+     * null. Only explicit language markers count - Chinese characters elsewhere in the name are usually
+     * just the movie's Chinese title, which says nothing about the subtitle's language. */
+    private fun subtitleLanguage(path: String): String? {
+        val name = path.substringAfterLast('/').lowercase()
+        val tokens = name.split('.', ' ', '-', '_', '[', ']', '(', ')').filter { it.isNotEmpty() }
+        return when {
+            tokens.any { it in setOf("chi", "zh", "zho", "chs", "cht", "chinese", "cn", "sc", "tc", "gb", "big5") } ||
+                listOf("中文", "简体", "簡體", "繁体", "繁體", "双语", "雙語", "中英").any { it in name } -> "Chinese"
+            tokens.any { it in setOf("en", "eng", "english") } || "english" in name -> "English"
+            else -> null
+        }
+    }
+
+    /** What the subtitle picker shows: the language if known, plus the end of the file name so two
+     * files of the same language can still be told apart. */
+    private fun subtitleLabel(path: String): String {
+        val name = path.substringAfterLast('/')
+        val tail = if (name.length > 28) "..." + name.takeLast(25) else name
+        return (subtitleLanguage(path) ?: "Subtitle") + " - " + tail
     }
 
     private fun subtitleMimeType(path: String) = when (path.substringAfterLast('.', "").lowercase()) {

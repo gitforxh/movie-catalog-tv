@@ -77,7 +77,7 @@ class DetailsActivity : AppCompatActivity() {
         movie.rt?.let { addBadge(container, "🍅 $it", "#FA320A", "#FFFFFF") }
         movie.tmdb?.let { addBadge(container, "TMDB $it", "#0369A1", "#FFFFFF") }
         movie.au?.takeIf { it.isNotEmpty() }?.let { addBadge(container, it.replace(" ", ""), "#0B6E4F", "#FFFFFF") }
-        if (movie.hasSub) addBadge(container, "SUB", "#64748B", "#FFFFFF")
+        movie.sub?.let { addBadge(container, it, "#64748B", "#FFFFFF") }
     }
 
     private fun addBadge(container: LinearLayout, text: String, backgroundColor: String, textColor: String) {

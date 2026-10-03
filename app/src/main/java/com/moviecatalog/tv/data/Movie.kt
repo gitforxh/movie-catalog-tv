@@ -24,7 +24,8 @@ data class Movie(
     val au: String?,
     val country: String?,
     val path: String?,
-    val hasSub: Boolean,
+    /** Which language a subtitle file is available in next to the movie: "CN", "EN", or null. */
+    val sub: String?,
 ) : java.io.Serializable {
     val isPlayable: Boolean get() = !path.isNullOrEmpty()
 
@@ -41,7 +42,7 @@ data class Movie(
             rt?.let { "RT $it" },
             tmdb?.let { "TMDB $it" },
             au?.takeIf { it.isNotEmpty() },
-            "SUB".takeIf { hasSub },
+            sub,
         ).joinToString("   ")
 
     companion object {
@@ -65,7 +66,8 @@ data class Movie(
                 au = str("au"),
                 country = str("country"),
                 path = str("path"),
-                hasSub = o.optBoolean("has_sub", false),
+                // "sub" is "CN"/"EN"/null; an older movies.json only has the has_sub boolean (Chinese only then).
+                sub = str("sub") ?: if (o.optBoolean("has_sub", false)) "CN" else null,
             )
         }
     }
